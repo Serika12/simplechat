@@ -93,13 +93,18 @@ def lambda_handler(event, context):
         print("Calling Bedrock invoke_model API with payload:", json.dumps(request_payload))
         
         ####APIの呼び出しをFastAPIの変更
-        # FastAPI URL
-        url = "https://cbea-34-125-100-35.ngrok-free.app/generate"  # ← /generate を忘れずに！
+        # FastAPIリクエスト用ペイロード（Bedrock形式から修正）
+        request_payload = {
+            "prompt": message,
+            "max_new_tokens": 512,
+            "temperature": 0.7,
+            "top_p": 0.9,
+            "do_sample": True
+        }
 
-        # データをJSONにエンコードしてバイト列にする
+        # URLとリクエスト処理
+        url = "https://cbea-34-125-100-35.ngrok-free.app/generate"
         data = json.dumps(request_payload).encode('utf-8')
-
-        # リクエストを作成
         req = urllib.request.Request(
             url,
             data=data,
@@ -107,9 +112,12 @@ def lambda_handler(event, context):
             method='POST'
         )
 
-        # サーバーにリクエストを送信してレスポンスを受け取る
+        # レスポンスの読み込みと処理
         with urllib.request.urlopen(req) as response:
             response_body = json.loads(response.read().decode('utf-8'))
+
+        assistant_response = response_body["generated_text"]
+
 
         
         # 応答の検証
