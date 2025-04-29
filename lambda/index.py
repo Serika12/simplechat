@@ -79,18 +79,6 @@ def lambda_handler(event, context):
                     "content": [{"text": msg["content"]}]
                 })
         
-        # invoke_model用のリクエストペイロード
-        request_payload = {
-            "messages": bedrock_messages,
-            "inferenceConfig": {
-                "maxTokens": 512,
-                "stopSequences": [],
-                "temperature": 0.7,
-                "topP": 0.9
-            }
-        }
-        
-        print("Calling Bedrock invoke_model API with payload:", json.dumps(request_payload))
         
         ####APIの呼び出しをFastAPIの変更
         # FastAPIリクエスト用ペイロード（Bedrock形式から修正）
@@ -101,7 +89,9 @@ def lambda_handler(event, context):
             "top_p": 0.9,
             "do_sample": True
         }
-
+        
+        print("Calling Bedrock invoke_model API with payload:", json.dumps(request_payload))
+        
         # URLとリクエスト処理
         url = "https://cbea-34-125-100-35.ngrok-free.app/generate"
         data = json.dumps(request_payload).encode('utf-8')
@@ -116,13 +106,7 @@ def lambda_handler(event, context):
         with urllib.request.urlopen(req) as response:
             response_body = json.loads(response.read().decode('utf-8'))
 
-        assistant_response = response_body["generated_text"]
 
-
-        
-        # 応答の検証
-        if not response_body.get('output') or not response_body['output'].get('message') or not response_body['output']['message'].get('content'):
-            raise Exception("No response content from the model")
         
         # アシスタントの応答を取得
         assistant_response = response_body['generated_text']
