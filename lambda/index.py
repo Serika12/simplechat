@@ -41,7 +41,15 @@ def lambda_handler(event, context):
         
         # リクエストボディの解析
         body = json.loads(event['body'])
-        message = body['message']
+
+        # "message" キーがなければ、"messages" リストから最後の入力を取得
+        if 'message' in body:
+            message = body['message']
+        elif 'messages' in body:
+            message = body['messages'][-1]['content'][0]['text']
+        else:
+            raise Exception("Neither 'message' nor 'messages' found in request body")
+
         conversation_history = body.get('conversationHistory', [])
         
         print("Processing message:", message)
@@ -85,7 +93,7 @@ def lambda_handler(event, context):
         print("Calling Bedrock invoke_model API with payload:", json.dumps(request_payload))
         
         ####APIの呼び出しをFastAPIの変更
-        url = "https://1b7f-34-125-100-35.ngrok-free.app/predict"
+        url = "https://cbea-34-125-100-35.ngrok-free.app"
 
         # データをJSONにエンコードしてバイト列にする
         data = json.dumps(request_payload).encode('utf-8')
