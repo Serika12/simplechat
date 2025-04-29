@@ -97,8 +97,8 @@ def lambda_handler(event, context):
         url = "https://cbea-34-125-100-35.ngrok-free.app/generate"
 
         # リクエスト形式をFastAPIに合わせて再構築
-        payload = {
-            "prompt": [{"prompt": message}],
+        request_payload = {
+            "prompt": message,
             "max_new_tokens": 512,
             "temperature": 0.7,
             "top_p": 0.9,
