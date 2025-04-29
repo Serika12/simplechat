@@ -4,6 +4,8 @@ import os
 import boto3
 import re  # 正規表現モジュールをインポート
 from botocore.exceptions import ClientError
+import urllib.request
+import json
 
 
 # Lambda コンテキストからリージョンを抽出する関数
@@ -82,16 +84,23 @@ def lambda_handler(event, context):
         
         print("Calling Bedrock invoke_model API with payload:", json.dumps(request_payload))
         
-        # invoke_model APIを呼び出し
-        response = bedrock_client.invoke_model(
-            modelId=MODEL_ID,
-            body=json.dumps(request_payload),
-            contentType="application/json"
+        ####APIの呼び出しをFastAPIの変更
+        url = "https://1b7f-34-125-100-35.ngrok-free.app/predict"
+
+        # データをJSONにエンコードしてバイト列にする
+        data = json.dumps(request_payload).encode('utf-8')
+
+        # リクエストを作成
+        req = urllib.request.Request(
+            url,
+            data=data,
+            headers={'Content-Type': 'application/json'},
+            method='POST'
         )
-        
-        # レスポンスを解析
-        response_body = json.loads(response['body'].read())
-        print("Bedrock response:", json.dumps(response_body, default=str))
+
+        # サーバーにリクエストを送信してレスポンスを受け取る
+        with urllib.request.urlopen(req) as response:
+            response_body = json.loads(response.read().decode('utf-8'))
         
         # 応答の検証
         if not response_body.get('output') or not response_body['output'].get('message') or not response_body['output']['message'].get('content'):
